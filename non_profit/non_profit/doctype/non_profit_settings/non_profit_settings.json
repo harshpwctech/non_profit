@@ -28,6 +28,8 @@
   "default_donor_type",
   "donation_webhook_secret",
   "column_break_22",
+  "allow_donation_invoicing",
+  "automate_donation_invoicing",
   "automate_donation_payment_entries",
   "donation_debit_account",
   "donation_payment_account",
@@ -158,20 +160,22 @@
    "read_only": 1
   },
   {
-   "depends_on": "automate_donation_payment_entries",
+   "depends_on": "eval:doc.automate_donation_payment_entries",
    "description": "Account for accepting donation payments",
    "fieldname": "donation_payment_account",
    "fieldtype": "Link",
    "label": "Donation Payment To",
-   "mandatory_depends_on": "automate_donation_payment_entries",
+   "mandatory_depends_on": "eval:doc.automate_donation_payment_entries",
    "options": "Account"
   },
   {
    "default": "0",
+   "depends_on": "eval:doc.allow_donation_invoicing",
    "description": "Auto creates Payment Entry for Donations created from web forms.",
    "fieldname": "automate_donation_payment_entries",
    "fieldtype": "Check",
-   "label": "Automate Donation Payment Entries"
+   "label": "Automate Donation Payment Entries",
+   "mandatory_depends_on": "eval:doc.allow_donation_invoicing"
   },
   {
    "depends_on": "eval:doc.allow_invoicing",
@@ -182,11 +186,11 @@
    "options": "Account"
   },
   {
-   "depends_on": "automate_donation_payment_entries",
+   "depends_on": "eval:doc.automate_donation_invoicing",
    "fieldname": "donation_debit_account",
    "fieldtype": "Link",
    "label": "Debit Account",
-   "mandatory_depends_on": "automate_donation_payment_entries",
+   "mandatory_depends_on": "eval:doc.automate_donation_invoicing",
    "options": "Account"
   },
   {
@@ -227,12 +231,26 @@
    "label": "Creation User",
    "options": "User",
    "reqd": 1
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:doc.allow_donation_invoicing",
+   "fieldname": "automate_donation_invoicing",
+   "fieldtype": "Check",
+   "label": "Automate Donation Invoicing for Web Forms",
+   "mandatory_depends_on": "eval:doc.allow_donation_invoicing"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_donation_invoicing",
+   "fieldtype": "Check",
+   "label": "Allow Donation Invoicing"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2021-03-11 10:43:38.124240",
+ "modified": "2024-02-24 15:45:35.390723",
  "modified_by": "Administrator",
  "module": "Non Profit",
  "name": "Non Profit Settings",
@@ -269,5 +287,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }
