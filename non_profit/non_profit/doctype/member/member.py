@@ -63,7 +63,7 @@ class Member(Document):
 		customer = create_customer(frappe._dict({
 			'fullname': self.member_name,
 			'email': self.email_id,
-			'phone': None
+			'mobile': self.mobile
 		}))
 
 		self.customer = customer
@@ -85,6 +85,7 @@ def create_member(user_details):
 		"member_name": user_details.fullname,
 		"email_id": user_details.email,
 		"pan_number": user_details.pan or None,
+		"mobile": user_details.mobile or None,
 		"membership_type": user_details.plan_id,
 		"customer_id": user_details.customer_id or None,
 		"subscription_id": user_details.subscription_id or None,
