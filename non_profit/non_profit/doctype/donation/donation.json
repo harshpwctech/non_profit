@@ -10,14 +10,17 @@
   "donor",
   "donor_name",
   "email",
+  "donor_type",
   "column_break_4",
   "company",
   "date",
   "payment_details_section",
   "paid",
+  "currency",
   "amount",
   "mode_of_payment",
   "column_break_12",
+  "invoice",
   "payment_id",
   "amended_from"
  ],
@@ -112,15 +115,35 @@
   {
    "fieldname": "column_break_12",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "label": "Invoice",
+   "options": "Sales Invoice"
+  },
+  {
+   "fieldname": "currency",
+   "fieldtype": "Link",
+   "label": "Currency",
+   "options": "Currency"
+  },
+  {
+   "fetch_from": "donor.donor_type",
+   "fieldname": "donor_type",
+   "fieldtype": "Data",
+   "label": "Donor Type",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-03-16 17:18:45.611741",
+ "modified": "2024-02-24 14:58:33.210108",
  "modified_by": "Administrator",
  "module": "Non Profit",
  "name": "Donation",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -155,6 +178,7 @@
  "search_fields": "donor_name, email",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "donor_name",
  "track_changes": 1
 }

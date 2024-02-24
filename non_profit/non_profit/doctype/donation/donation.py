@@ -21,7 +21,7 @@ class Donation(Document):
 			if user_type == 'Website User':
 				self.create_donor_for_website_user()
 			else:
-				frappe.throw(_('Please select a Member'))
+				frappe.throw(_('Please select a Donor'))
 
 	def create_donor_for_website_user(self):
 		donor_name = frappe.get_value('Donor', dict(email=frappe.session.user))
@@ -39,33 +39,96 @@ class Donation(Document):
 		if self.get('__islocal'):
 			self.donor = donor_name
 
-	def on_payment_authorized(self, *args, **kwargs):
-		self.db_set("paid", 1)
-		self.load_from_db()
-		self.create_payment_entry()
-
-	def create_payment_entry(self, date=None):
-		settings = frappe.get_doc('Non Profit Settings')
-		if not settings.automate_donation_payment_entries:
+	def on_payment_authorized(self, status_changed_to=None):
+		if status_changed_to not in ("Completed", "Authorized"):
 			return
+		self.load_from_db()
+		self.db_set("paid", 1)
+		settings = frappe.get_doc('Non Profit Settings')
+		if settings.allow_donation_invoicing and settings.automate_donation_invoicing:
+			self.generate_invoice(with_payment_entry=settings.automate_donation_payment_entries, save=True)
+	
+	@frappe.whitelist()
+	def generate_invoice(self, save=True, with_payment_entry=False):
+		if not (self.paid or self.currency or self.amount):
+			frappe.throw(_("The payment for this donation is not paid. To generate invoice fill the payment details"))
 
+		if self.invoice:
+			frappe.throw(_("An invoice is already linked to this document"))
+
+		donor = frappe.get_cached_doc("Donor", self.donor)
+		if not donor.customer:
+			frappe.throw(_("No customer linked to donor {0}").format(frappe.bold(self.donor)))
+
+		donor_type = frappe.get_cached_doc("Donor Type", self.donor_type)
+		settings = frappe.get_cached_doc("Non Profit Settings")
+		self.validate_donor_type_and_settings(donor_type, settings)
+
+		invoice = make_invoice(self, donor, donor_type, settings)
+		self.reload()
+		self.invoice = invoice.name
+
+		if with_payment_entry:
+			self.make_payment_entry(settings, invoice)
+
+		if save:
+			self.save()
+
+		return invoice
+	
+	def validate_donor_type_and_settings(self, donor_type, settings):
+		settings_link = get_link_to_form("Non Profit Settings", "Non Profit Settings")
+		
+		if not settings.donation_debit_account:
+			frappe.throw(_("You need to set <b>Donor Debit Account</b> in {0}").format(settings_link))
+
+		if not settings.company:
+			frappe.throw(_("You need to set <b>Default Company</b> for invoicing in {0}").format(settings_link))
+
+		if not donor_type.linked_item:
+			frappe.throw(_("Please set a Linked Item for the Donor Type {0}").format(
+				get_link_to_form("Donor Type", donor_type.name)))
+
+	def make_payment_entry(self, settings, invoice):
 		if not settings.donation_payment_account:
 			frappe.throw(_('You need to set <b>Payment Account</b> for Donation in {0}').format(
 				get_link_to_form('Non Profit Settings', 'Non Profit Settings')))
 
-		from non_profit.non_profit.custom_doctype.payment_entry import get_donation_payment_entry
-
+		from erpnext.accounts.doctype.payment_entry.payment_entry import get_payment_entry
 		frappe.flags.ignore_account_permission = True
-		pe = get_donation_payment_entry(dt=self.doctype, dn=self.name)
+		pe = get_payment_entry(dt="Sales Invoice", dn=invoice.name, bank_amount=invoice.grand_total)
 		frappe.flags.ignore_account_permission = False
-		pe.paid_from = settings.donation_debit_account
 		pe.paid_to = settings.donation_payment_account
-		pe.posting_date = date or getdate()
+		pe.posting_date = getdate()
 		pe.reference_no = self.name
-		pe.reference_date = date or getdate()
+		pe.reference_date = getdate()
 		pe.flags.ignore_mandatory = True
-		pe.insert()
+		pe.save()
 		pe.submit()
+
+def make_invoice(donation, donor, donor_type, settings):
+	invoice = frappe.get_doc({
+		"doctype": "Sales Invoice",
+		"customer": donor.customer,
+		"debit_to": settings.donation_debit_account,
+		"currency": donation.currency,
+		"company": settings.company,
+		"is_pos": 0,
+		"items": [
+			{
+				"item_code": donor_type.linked_item,
+				"rate": donation.amount,
+				"qty": 1
+			}
+		]
+	})
+	invoice.set_missing_values()
+	invoice.insert()
+	invoice.submit()
+
+	frappe.msgprint(_("Sales Invoice created successfully"))
+
+	return invoice
 
 
 @frappe.whitelist(allow_guest=True)
@@ -158,7 +221,7 @@ def create_donor(payment):
 		'donor_name': donor_details.email,
 		'donor_type': donor_type,
 		'email': donor_details.email,
-		'contact': donor_details.contact
+		'mobile': donor_details.contact
 	})
 
 	if donor_details.get('notes'):
