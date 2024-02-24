@@ -1,21 +1,26 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:email",
+ "autoname": "naming_series:",
  "creation": "2017-09-19 16:20:27.510196",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "naming_series",
   "donor_name",
   "column_break_5",
   "donor_type",
   "email",
+  "mobile",
   "image",
   "address_contacts",
   "address_html",
   "column_break_9",
-  "contact_html"
+  "contact_html",
+  "customer_section",
+  "customer",
+  "customer_name"
  ],
  "fields": [
   {
@@ -42,7 +47,6 @@
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Email",
-   "reqd": 1,
    "unique": 1
   },
   {
@@ -73,6 +77,36 @@
    "fieldname": "contact_html",
    "fieldtype": "HTML",
    "label": "Contact HTML"
+  },
+  {
+   "fieldname": "mobile",
+   "fieldtype": "Data",
+   "label": "Mobile"
+  },
+  {
+   "fieldname": "customer_section",
+   "fieldtype": "Section Break",
+   "label": "Customer"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fetch_from": "customer.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "NPO-DONER-.YYYY.-",
+   "reqd": 1
   }
  ],
  "image_field": "image",
@@ -82,10 +116,11 @@
    "link_fieldname": "donor"
   }
  ],
- "modified": "2021-02-17 16:36:33.470731",
+ "modified": "2024-02-24 15:40:20.148480",
  "modified_by": "Administrator",
  "module": "Non Profit",
  "name": "Donor",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -105,6 +140,7 @@
  "restrict_to_domain": "Non Profit",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "donor_name",
  "track_changes": 1
 }

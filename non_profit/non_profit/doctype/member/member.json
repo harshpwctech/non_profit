@@ -13,6 +13,7 @@
   "column_break_5",
   "membership_type",
   "email_id",
+  "mobile",
   "image",
   "customer_section",
   "customer",
@@ -166,14 +167,20 @@
    "fieldtype": "Select",
    "label": "Subscription Status",
    "options": "\nActive\nHalted"
+  },
+  {
+   "fieldname": "mobile",
+   "fieldtype": "Data",
+   "label": "Mobile"
   }
  ],
  "image_field": "image",
  "links": [],
- "modified": "2021-07-11 14:27:26.368039",
+ "modified": "2024-02-24 14:17:17.266989",
  "modified_by": "Administrator",
  "module": "Non Profit",
  "name": "Member",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -205,6 +212,7 @@
  "restrict_to_domain": "Non Profit",
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "member_name",
  "track_changes": 1
 }
