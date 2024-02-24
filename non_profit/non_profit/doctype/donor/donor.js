@@ -9,9 +9,17 @@ frappe.ui.form.on('Donor', {
 
 		if(!frm.doc.__islocal) {
 			frappe.contacts.render_address_and_contact(frm);
+			if (!frm.doc.customer) {
+				frm.add_custom_button(__('Create Customer'), () => {
+					frm.call('make_customer_and_link').then(() => {
+						frm.reload_doc();
+					});
+				});
+			}
 		} else {
 			frappe.contacts.clear_address_and_contact(frm);
 		}
+		
 
 	}
 });
