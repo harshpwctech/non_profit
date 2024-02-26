@@ -117,7 +117,6 @@
    "fieldtype": "Column Break"
   },
   {
-   "allow_on_submit": 1,
    "fieldname": "invoice",
    "fieldtype": "Link",
    "label": "Invoice",
@@ -140,7 +139,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-02-24 19:09:21.139457",
+ "modified": "2024-02-26 13:09:15.597238",
  "modified_by": "Administrator",
  "module": "Non Profit",
  "name": "Donation",

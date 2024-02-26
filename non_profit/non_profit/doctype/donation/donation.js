@@ -7,7 +7,6 @@ frappe.ui.form.on('Donation', {
 			frm.call({
 				doc: frm.doc,
 				method: "generate_invoice",
-				args: {save: true},
 				freeze: true,
 				freeze_message: __("Creating Donation Invoice"),
 				callback: function(r) {

@@ -46,10 +46,10 @@ class Donation(Document):
 		self.db_set("paid", 1)
 		settings = frappe.get_doc('Non Profit Settings')
 		if settings.allow_donation_invoicing and settings.automate_donation_invoicing:
-			self.generate_invoice(with_payment_entry=settings.automate_donation_payment_entries, save=True)
+			self.generate_invoice(with_payment_entry=settings.automate_donation_payment_entries)
 	
 	@frappe.whitelist()
-	def generate_invoice(self, save=True, with_payment_entry=False):
+	def generate_invoice(self, with_payment_entry=False):
 		if not (self.paid or self.currency or self.amount):
 			frappe.throw(_("The payment for this donation is not paid. To generate invoice fill the payment details"))
 
@@ -65,14 +65,10 @@ class Donation(Document):
 		self.validate_donor_type_and_settings(donor_type, settings)
 
 		invoice = make_invoice(self, donor, donor_type, settings)
-		self.reload()
-		self.invoice = invoice.name
+		self.db_set("invoice", invoice.name)
 
 		if with_payment_entry:
 			self.make_payment_entry(settings, invoice)
-
-		if save:
-			self.save()
 
 		return invoice
 	
@@ -99,9 +95,9 @@ class Donation(Document):
 		pe = get_payment_entry(dt="Sales Invoice", dn=invoice.name, bank_amount=invoice.grand_total)
 		frappe.flags.ignore_account_permission = False
 		pe.paid_to = settings.donation_payment_account
-		pe.posting_date = getdate()
+		pe.posting_date = self.date or getdate()
 		pe.reference_no = self.name
-		pe.reference_date = getdate()
+		pe.reference_date = self.date or getdate()
 		pe.flags.ignore_mandatory = True
 		pe.save()
 		pe.submit()
@@ -109,6 +105,9 @@ class Donation(Document):
 def make_invoice(donation, donor, donor_type, settings):
 	invoice = frappe.get_doc({
 		"doctype": "Sales Invoice",
+		"posting_date": donation.date or getdate(),
+		"set_posting_time": 1 if donation.date else 0,
+		"due_date": donation.date or getdate(),
 		"customer": donor.customer,
 		"debit_to": settings.donation_debit_account,
 		"currency": donation.currency,
